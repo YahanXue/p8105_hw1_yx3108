@@ -9,22 +9,91 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+# Problem 1
+I load 'penguins' dataset from the 'palmerpenguins' package.
+```{r load_penguins}
+data("penguins", package = "palmerpenguins")
+```
+The `penguins` dataset contains measurements of penguins, including variables
+such as species, island, bill length, bill depth, flipper length, body mass,
+sex, and year.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+The dataset contains `r nrow(penguins)` rows and `r ncol(penguins)` columns.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+The mean flipper length is `r round(mean(penguins$flipper_length_mm, na.rm = TRUE), 2)` mm.
 
-```{r cars}
-summary(cars)
+Next, I create a scatterplot of flipper length versus bill length, with points
+colored according to penguin species.
+
+```{r penguin_plot}
+library(ggplot2)
+
+penguin_plot =
+  ggplot(
+    penguins,
+    aes(x = bill_length_mm, y = flipper_length_mm, color = species)
+  ) +
+  geom_point()
+
+penguin_plot
+```
+```{r save_plot}
+ggsave("penguin_scatterplot.png", plot = penguin_plot)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+# Problem 2
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+I create a dataframe containing a random sample from a standard normal
+distribution, a logical vector, a character vector, and a factor vector.
+
+```{r create_dataframe}
+library(tidyverse)
+
+set.seed(123)
+
+problem2_df =
+  tibble::tibble(
+    random_sample = rnorm(10),
+    logical_vector = random_sample > 0,
+    character_vector = c(
+      "a", "b", "c", "d", "e",
+      "f", "g", "h", "i", "j"
+    ),
+    factor_vector = factor(
+      c(
+        "level1", "level2", "level3", "level1", "level2",
+        "level3", "level1", "level2", "level3", "level1"
+      )
+    )
+  )
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Next, I calculate the mean of each variable.
+
+```{r calculate_means}
+mean(pull(problem2_df, random_sample))
+mean(pull(problem2_df, logical_vector))
+mean(pull(problem2_df, character_vector))
+mean(pull(problem2_df, factor_vector))
+```
+The mean can be calculated for the numeric and logical variables. For the
+logical variable, R treats `TRUE` as 1 and `FALSE` as 0, so its mean represents
+the proportion of values that are `TRUE`. The character and factor variables
+do not have meaningful arithmetic means, and `mean()` returns `NA`
+with a warning.
+
+Next, I mannually convert the logical, character, and factor variables to
+numeric variables.
+
+```{r coercion, results='hide'}
+as.numeric(pull(problem2_df, logical_vector))
+as.numeric(pull(problem2_df, character_vector))
+as.numeric(pull(problem2_df, factor_vector))
+```
+
+Logical values convert `FALSE` to 0 and `TRUE` to 1. So the mean of a logical variable can be calculated.
+
+The character variable contains non-numeric strings, so it turns to numeric produces `NA` values.
+
+The factor variable is converted to integer codes corresponding to its factor levels. These integer codes represent the internal coding of the factor levels, which are not meaningful numerical values. 
